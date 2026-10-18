@@ -23,7 +23,7 @@ jobs:
             -o response.json \
             -w "%{http_code}" \
             -H "Authorization: Bearer $DATABRICKS_TOKEN" \
-            "$DATABRICKS_HOST/api/2.0/current-user/me")
+            "$DATABRICKS_HOST/api/2.0/preview/scim/v2/Me")
 
           if [ "$response" = "200" ]; then
             echo "SUCCESS: Databricks authentication works."
