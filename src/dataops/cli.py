@@ -64,7 +64,7 @@ def main() -> int:
         for message in messages:
             print(message)
         return 0
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
