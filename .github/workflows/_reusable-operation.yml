@@ -1,3 +1,30 @@
+
+name: Reusable DataOps Operation
+
+on:
+  workflow_call:
+    inputs:
+      operation:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      dry_run:
+        required: true
+        type: boolean
+      scope:
+        required: false
+        type: string
+        default: incremental
+      target:
+        required: false
+        type: string
+        default: ""
+      migration_version:
+        required: false
+        type: string
+        default: ""
       catalogs:
         required: false
         type: string
@@ -14,3 +41,88 @@
         required: false
         type: string
         default: ""
+
+    secrets:
+      DATABRICKS_HOST:
+        required: false
+      DATABRICKS_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  execute:
+    name: ${{ inputs.operation }} / ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate and show plan
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          PRODUCTION_APPROVED: ${{ vars.PRODUCTION_APPROVED }}
+          OPERATION: ${{ inputs.operation }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          SCOPE: ${{ inputs.scope }}
+          TARGET: ${{ inputs.target }}
+          MIGRATION_VERSION: ${{ inputs.migration_version }}
+          CATALOGS: ${{ inputs.catalogs }}
+          SCHEMAS: ${{ inputs.schemas }}
+          TABLES: ${{ inputs.tables }}
+          VOLUMES: ${{ inputs.volumes }}
+        run: |
+          python -m dataops.cli \
+            --operation "$OPERATION" \
+            --environment "$ENVIRONMENT" \
+            --dry-run true \
+            --scope "$SCOPE" \
+            --target "$TARGET" \
+            --migration-version "$MIGRATION_VERSION" \
+            --catalogs "$CATALOGS" \
+            --schemas "$SCHEMAS" \
+            --tables "$TABLES" \
+            --volumes "$VOLUMES"
+
+      - name: Apply operation
+        if: ${{ inputs.dry_run == false }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          PRODUCTION_APPROVED: ${{ vars.PRODUCTION_APPROVED }}
+          OPERATION: ${{ inputs.operation }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          SCOPE: ${{ inputs.scope }}
+          TARGET: ${{ inputs.target }}
+          MIGRATION_VERSION: ${{ inputs.migration_version }}
+          CATALOGS: ${{ inputs.catalogs }}
+          SCHEMAS: ${{ inputs.schemas }}
+          TABLES: ${{ inputs.tables }}
+          VOLUMES: ${{ inputs.volumes }}
+        run: |
+          python -m dataops.cli \
+            --operation "$OPERATION" \
+            --environment "$ENVIRONMENT" \
+            --dry-run false \
+            --scope "$SCOPE" \
+            --target "$TARGET" \
+            --migration-version "$MIGRATION_VERSION" \
+            --catalogs "$CATALOGS" \
+            --schemas "$SCHEMAS" \
+            --tables "$TABLES" \
+            --volumes "$VOLUMES"
