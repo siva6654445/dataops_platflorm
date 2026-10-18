@@ -34,14 +34,18 @@ def main() -> int:
     args = parse_args()
     dry_run = args.dry_run == "true"
 
-    if args.environment == "prd" and not dry_run:
-        if os.getenv("PRODUCTION_APPROVED", "").lower() != "true":
-            print(
-                "ERROR: production apply is blocked. Use a protected GitHub Environment "
-                "and explicitly configure PRODUCTION_APPROVED=true after approval.",
-                file=sys.stderr,
-            )
-            return 2
+    if (
+        args.environment == "prd"
+        and not dry_run
+        and os.getenv("PRODUCTION_APPROVED", "").lower() != "true"
+    ):
+        print(
+            "ERROR: production apply is blocked. "
+            "Use a protected GitHub Environment and explicitly "
+            "configure PRODUCTION_APPROVED=true after approval.",
+            file=sys.stderr,
+        )
+        return 2
 
     params = {
         "environment": args.environment,
