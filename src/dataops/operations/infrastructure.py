@@ -81,11 +81,11 @@ def deploy_infrastructure(
                     f"No execution status returned for catalog {catalog}."
                 )
 
-            if str(status.state.value) != "SUCCEEDED":
+            if str(status.state) != "SUCCEEDED":
                 message = (
                     status.error.message
                     if status.error
-                    else status.state.value
+                    else status.state
                 )
                 raise RuntimeError(
                     f"Failed to create catalog {catalog}: {message}"
