@@ -72,7 +72,6 @@ def deploy_infrastructure(
                 warehouse_id=warehouse_id,
                 statement=statement,
                 wait_timeout="50s",
-                on_wait_timeout="CANCEL",
             )
 
             status = response.status
