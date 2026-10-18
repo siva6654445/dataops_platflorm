@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from typing import Any
@@ -10,10 +11,12 @@ def deploy_infrastructure(config: dict[str, Any], dry_run: bool) -> list[str]:
     The dry-run path never contacts the workspace.
     """
     plan: list[str] = []
+
     for resource in config["resources"]:
         catalog = resource["catalog"]
         schema = resource["schema"]
         volume = resource["volume"]
+
         plan.extend([
             f"Ensure catalog: {catalog}",
             f"Ensure schema: {catalog}.{schema}",
@@ -27,6 +30,7 @@ def deploy_infrastructure(config: dict[str, Any], dry_run: bool) -> list[str]:
     from databricks.sdk.errors import AlreadyExists, NotFound
 
     client = WorkspaceClient()
+
     for resource in config["resources"]:
         catalog = resource["catalog"]
         schema = resource["schema"]
@@ -36,25 +40,39 @@ def deploy_infrastructure(config: dict[str, Any], dry_run: bool) -> list[str]:
         try:
             client.catalogs.get(catalog)
         except NotFound:
-            client.catalogs.create(name=catalog, comment=f"Managed by DataOps ({config['environment']})")
+            try:
+                client.catalogs.create(
+                    name=catalog,
+                    comment=f"Managed by DataOps ({config['environment']})",
+                )
+            except AlreadyExists:
+                pass
 
         try:
             client.schemas.get(full_name=f"{catalog}.{schema}")
         except NotFound:
-            client.schemas.create(name=schema, catalog_name=catalog, comment=comment)
+            try:
+                client.schemas.create(
+                    name=schema,
+                    catalog_name=catalog,
+                    comment=comment,
+                )
+            except AlreadyExists:
+                pass
+
+        full_volume_name = f"{catalog}.{schema}.{volume}"
 
         try:
-            client.volumes.read(name=volume, catalog_name=catalog, schema_name=schema)
+            client.volumes.read(name=full_volume_name)
         except NotFound:
-            client.volumes.create(
-                name=volume,
-                catalog_name=catalog,
-                schema_name=schema,
-                volume_type="MANAGED",
-                comment=comment,
-            )
-        except AlreadyExists:
-            # A concurrent deployment may have created the volume after the read.
-            pass
+            try:
+                client.volumes.create(
+                    name=volume,
+                    catalog_name=catalog,
+                    schema_name=schema,
+                    volume_type="MANAGED",
+                )
+            except AlreadyExists:
+                pass
 
     return ["Infrastructure apply completed.", *plan]
