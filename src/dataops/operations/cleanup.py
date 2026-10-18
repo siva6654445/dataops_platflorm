@@ -4,7 +4,6 @@ from __future__ import annotations
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import NotFound
 
-
 PROTECTED_CATALOGS = {"munich_bronze", "munich_re_bronze"}
 
 

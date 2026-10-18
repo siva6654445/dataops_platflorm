@@ -7,7 +7,6 @@ from typing import Any
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors import AlreadyExists, NotFound
 
-
 PROTECTED_CATALOGS = {"munich_bronze", "munich_re_bronze"}
 
 
