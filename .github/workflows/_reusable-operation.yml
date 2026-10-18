@@ -44,9 +44,11 @@ on:
 
     secrets:
       DATABRICKS_HOST:
-        required: false
+        required: true
       DATABRICKS_TOKEN:
-        required: false
+        required: true
+      DATABRICKS_SQL_WAREHOUSE_ID:
+        required: true
 
 permissions:
   contents: read
