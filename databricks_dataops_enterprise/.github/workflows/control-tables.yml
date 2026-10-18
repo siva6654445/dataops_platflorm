@@ -1,0 +1,34 @@
+name: 02 - Control Tables
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, uat, prd]
+        required: true
+        default: dev
+      scope:
+        description: Control-table action
+        type: choice
+        options: [initial, incremental, repair]
+        required: true
+        default: initial
+      dry_run:
+        description: Preview only
+        type: boolean
+        required: true
+        default: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/_reusable-operation.yml
+    with:
+      operation: control_tables
+      environment: ${{ inputs.environment }}
+      scope: ${{ inputs.scope }}
+      dry_run: ${{ inputs.dry_run }}
+    secrets:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

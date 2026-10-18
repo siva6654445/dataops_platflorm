@@ -1,0 +1,83 @@
+name: Reusable DataOps Operation
+
+on:
+  workflow_call:
+    inputs:
+      operation:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      dry_run:
+        required: true
+        type: boolean
+      scope:
+        required: false
+        type: string
+        default: incremental
+      target:
+        required: false
+        type: string
+        default: ""
+      migration_version:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      DATABRICKS_HOST:
+        required: false
+      DATABRICKS_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  execute:
+    name: ${{ inputs.operation }} / ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate and show plan
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          PRODUCTION_APPROVED: ${{ vars.PRODUCTION_APPROVED }}
+        run: |
+          python -m dataops.cli \
+            --operation "${{ inputs.operation }}" \
+            --environment "${{ inputs.environment }}" \
+            --dry-run true \
+            --scope "${{ inputs.scope }}" \
+            --target "${{ inputs.target }}" \
+            --migration-version "${{ inputs.migration_version }}"
+
+      - name: Apply operation
+        if: ${{ inputs.dry_run == false }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          PRODUCTION_APPROVED: ${{ vars.PRODUCTION_APPROVED }}
+        run: |
+          python -m dataops.cli \
+            --operation "${{ inputs.operation }}" \
+            --environment "${{ inputs.environment }}" \
+            --dry-run false \
+            --scope "${{ inputs.scope }}" \
+            --target "${{ inputs.target }}" \
+            --migration-version "${{ inputs.migration_version }}"

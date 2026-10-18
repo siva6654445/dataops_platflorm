@@ -1,0 +1,33 @@
+name: 05 - Repair Failed Load
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, uat, prd]
+        required: true
+        default: dev
+      target:
+        description: Failed workflow/entity identifier
+        type: string
+        required: true
+      dry_run:
+        description: Preview only
+        type: boolean
+        required: true
+        default: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/_reusable-operation.yml
+    with:
+      operation: repair
+      environment: ${{ inputs.environment }}
+      scope: repair
+      target: ${{ inputs.target }}
+      dry_run: ${{ inputs.dry_run }}
+    secrets:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

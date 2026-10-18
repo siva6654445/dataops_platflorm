@@ -1,0 +1,32 @@
+name: 06 - Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, uat, prd]
+        required: true
+        default: dev
+      target:
+        description: Exact resource or cleanup plan identifier
+        type: string
+        required: true
+      dry_run:
+        description: Preview only; do not disable without reviewing deletion logic
+        type: boolean
+        required: true
+        default: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/_reusable-operation.yml
+    with:
+      operation: cleanup
+      environment: ${{ inputs.environment }}
+      target: ${{ inputs.target }}
+      dry_run: ${{ inputs.dry_run }}
+    secrets:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

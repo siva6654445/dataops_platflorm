@@ -1,0 +1,23 @@
+{
+  "environment": "dev",
+  "resources": [
+    {
+      "catalog": "bronze_catalog",
+      "schema": "bronze",
+      "volume": "raw_files",
+      "comment": "Raw landing files for the bronze layer"
+    },
+    {
+      "catalog": "silver_catalog",
+      "schema": "silver",
+      "volume": "clean_files",
+      "comment": "Validated and cleansed files for the silver layer"
+    },
+    {
+      "catalog": "gold_catalog",
+      "schema": "gold",
+      "volume": "export_files",
+      "comment": "Curated export files for the gold layer"
+    }
+  ]
+}
