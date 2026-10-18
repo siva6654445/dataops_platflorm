@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+import traceback
 
 import argparse
 import os
@@ -120,6 +121,7 @@ def main() -> int:
         return 0
 
     except Exception as exc:  # noqa: BLE001
+        traceback.print_exc()
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
